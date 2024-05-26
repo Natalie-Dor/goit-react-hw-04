@@ -1,0 +1,16 @@
+.btn {
+  background-color: blue;
+  color: grey;
+  width: 200px;
+  height: 40px;
+  margin: 16px auto;
+  border: 1px dotted lightblue;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.btn:hover {
+  background-color: blueviolet;
+}
