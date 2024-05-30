@@ -9,7 +9,12 @@ axios.defaults.params = {
   client_id: API_KEY,
 };
 
-export const getPhotos = async (query, page) => {
-  const { data } = await axios.get(`search/photos?query=${query}&page=${page}`);
-  return data;
+export const getImages = async (topic, currentPage) => {
+  const response = await axios.get('search/photos', {
+    params: {
+      query: topic,
+      page: currentPage,
+    },
+  });
+  return response.data.results;
 };

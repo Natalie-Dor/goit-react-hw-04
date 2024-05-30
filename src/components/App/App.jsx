@@ -1,45 +1,49 @@
-import toast, { Toaster } from 'react-hot-toast';
-import { getPhotos } from '../../apiService/photos';
 import { useEffect, useState } from 'react';
-
-import SearchBar from '../SearchBar/SearchBar';
+import { getImages } from '../../apiService/photos';
+import toast, { Toaster } from 'react-hot-toast';
 import ImageGallery from '../ImageGallery/ImageGallery';
+import SearchBar from '../SearchBar/SearchBar';
 import Loader from '../Loader/Loader';
 import LoadMoreBtn from '../LoadMoreBtn/LoadMoreBtn';
-import ErorrMessage from '../ErrorMessage/ErrorMessage';
 import ImageModal from '../ImageModal/ImageModal';
+import ErrorMessage from '../ErrorMessage/ErrorMessage';
 
+// import
 export default function App() {
-  const [query, setQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  //   const [isError, setIsError] = useState(false);
   const [page, setPage] = useState(1);
-  const [gallery, setGallery] = useState([]);
-  const [isLoader, setLoader] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [total, setTotal] = useState(0);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [currentImage, setCurrentImage] = useState();
+  // ===============================
   useEffect(() => {
-    if (!query) return;
-    const handleGallery = async () => {
+    if (searchQuery.trim() === '') {
+      return;
+    }
+    async function fetchImages() {
       try {
-        setLoader(true);
-        const value = await getPhotos(query, page);
-        setGallery(prevState => {
-          return [...prevState, ...value.results];
-        });
-        setTotal(value.total_pages);
+        setIsLoading(true);
+        // setIsError(false);
+        const fetchedImages = await getImages(searchQuery, page);
+        setImages(prevState => [...prevState, ...fetchedImages]);
+        setTotal(fetchedImages.total_pages);
       } catch (error) {
+        // setIsError(true);
         toast.error(error.message);
       } finally {
-        setLoader(false);
+        setIsLoading(false);
       }
-    };
-    handleGallery();
-  }, [page, query]);
+    }
+    fetchImages();
+  }, [page, searchQuery]);
 
-  const handleSubmit = value => {
-    setGallery([]);
-    setQuery(value);
+  const handleSearch = async topic => {
+    setSearchQuery(topic);
     setPage(1);
+    setImages([]);
   };
   const handleLoadMore = () => {
     setPage(page + 1);
@@ -53,19 +57,16 @@ export default function App() {
   const closeModal = () => {
     setModalIsOpen(false);
   };
-
   return (
     <>
-      <SearchBar onSubmit={handleSubmit} />
+      <SearchBar onSubmit={handleSearch} />
       <Toaster />
-      {query !== '' && (
-        <ImageGallery value={gallery} onClickImage={openModal} />
+      {searchQuery && total === 0 && <ErrorMessage />}
+      {isLoading && <Loader />}
+      {images.length > 0 && (
+        <ImageGallery items={images} onClickImage={openModal} />
       )}
-      {query && total === 0 && <ErorrMessage />}
-      {isLoader && <Loader />}
-      {gallery.length > 0 && total > page && (
-        <LoadMoreBtn onClick={handleLoadMore} />
-      )}
+      {images.length > 0 && <LoadMoreBtn onClick={handleLoadMore} />}
 
       <ImageModal
         isOpen={modalIsOpen}

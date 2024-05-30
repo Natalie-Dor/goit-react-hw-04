@@ -1,3 +1,4 @@
-export default function ErorrMessage() {
-  return <p>No photos for this request...</p>;
+import css from './ErrorMessage.module.css';
+export default function ErrorMessage() {
+  return <p className={css.text}>Try again...</p>;
 }
